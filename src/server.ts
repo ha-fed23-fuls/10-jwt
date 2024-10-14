@@ -1,6 +1,7 @@
 import express, { Express, Request, Response } from 'express'
-import { validateLogin } from './users.js'
+import { getUserData, UserId, validateLogin } from './users.js'
 import jwt from 'jsonwebtoken'
+import { getBooks } from './data.js'
 const { sign, verify } = jwt
 
 const port: number = Number(process.env.PORT || 1234)
@@ -41,8 +42,43 @@ app.post('/login', (req: Request, res: Response) => {
 	res.send({ jwt: token })
 })
 
-// TODO: lägg till en skyddad route, t.ex. /protected
-// app.get('/protected', ...)
+
+app.get('/protected', (req: Request, res: Response) => {
+	if( !process.env.SECRET ) {
+		res.sendStatus(500)
+		return
+	}
+	// finns det en JWT?
+	// är den giltig? verify
+	// om giltig -> hämta användarens böcker
+	let token = req.headers.authorization
+	console.log('Header:', token)
+	if( !token ) {
+		res.sendStatus(401)
+		return
+	}
+	let payload: Payload
+	try {
+		payload = verify(token, process.env.SECRET) as Payload
+		console.log('Payload: ', payload)
+	} catch(error) {
+		res.sendStatus(400) // bad request
+		return
+	}
+	let userId: UserId = payload.userId
+	// Korrekt JWT! Nu kan vi leta upp användaren
+	const user = getUserData(userId)
+	if( !user ) {
+		res.sendStatus(404) // not found
+		return
+	}
+	const data = getBooks(user.name)
+	res.send(data)
+})
+interface Payload {
+	userId: string;
+	iat: number;
+}
 
 app.listen(port, () => {
 	console.log(`Server is listening on port ${port}...`)
