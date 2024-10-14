@@ -5,12 +5,12 @@ const port: number = Number(process.env.PORT || 1234)
 const app: Express = express()
 
 // Logger middleware
+app.use('/', express.json())
 app.use('/', (req, res, next) => {
 	console.log(`${req.method}  ${req.url}`, req.body)
 	next()
 })
 app.use('/', express.static('./frontend'))
-app.use('/', express.json())
 
 app.post('/login', (req: Request, res: Response) => {
 	// Klar: middleware för att ta emot body

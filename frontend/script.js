@@ -7,6 +7,9 @@ button.addEventListener('click', async () => {
 	console.log('Skickar inloggningsuppgifter till servern: ', data)
 	fetch('/login', {
 		method: 'POST',
-		body: data
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify( data )
 	})
 })
