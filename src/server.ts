@@ -1,5 +1,7 @@
 import express, { Express, Request, Response } from 'express'
 import { validateLogin } from './users.js'
+import jwt from 'jsonwebtoken'
+const { sign, verify } = jwt
 
 const port: number = Number(process.env.PORT || 1234)
 const app: Express = express()
@@ -13,6 +15,10 @@ app.use('/', (req, res, next) => {
 app.use('/', express.static('./frontend'))
 
 app.post('/login', (req: Request, res: Response) => {
+	if( !process.env.SECRET ) {
+		res.sendStatus(500)
+		return
+	}
 	// Klar: middleware för att ta emot body
 	// TODO: validera body
 	// kontrollera om username+password matchar en befintlig användare
@@ -27,8 +33,16 @@ app.post('/login', (req: Request, res: Response) => {
 	}
 
 	// Make JWT
-	res.send('"JWT"')
+	// res.send('"JWT"')
+	const payload = {
+		userId
+	}
+	const token: string = sign(payload, process.env.SECRET)
+	res.send({ jwt: token })
 })
+
+// TODO: lägg till en skyddad route, t.ex. /protected
+// app.get('/protected', ...)
 
 app.listen(port, () => {
 	console.log(`Server is listening on port ${port}...`)
