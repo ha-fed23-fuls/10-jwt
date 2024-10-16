@@ -7,6 +7,12 @@ const { sign, verify } = jwt
 const port: number = Number(process.env.PORT || 1234)
 const app: Express = express()
 
+interface Payload {
+	userId: string;
+	iat: number;
+}
+
+
 app.use('/', express.json())  // parse body - body finns i Request-objektet
 app.use('/', (req, res, next) => {
 	// Logger middleware
@@ -61,6 +67,7 @@ app.get('/protected', (req: Request, res: Response) => {
 	let token = req.headers.authorization
 	console.log('Header:', token)
 	if( !token ) {
+		// TODO: skicka tillbaka ett objekt med felmeddelande (se 401 i funktionen ovan)
 		res.sendStatus(401)
 		return
 	}
@@ -82,10 +89,8 @@ app.get('/protected', (req: Request, res: Response) => {
 	const data = getBooks(user.name)
 	res.send(data)
 })
-interface Payload {
-	userId: string;
-	iat: number;
-}
+
+
 
 app.listen(port, () => {
 	console.log(`Server is listening on port ${port}...`)
